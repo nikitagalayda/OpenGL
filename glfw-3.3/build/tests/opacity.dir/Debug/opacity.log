@@ -1,0 +1,6 @@
+﻿  Building Custom Rule C:/Users/Nikita/Desktop/OpenGL/glfw-3.3/tests/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Nikita/Desktop/OpenGL/glfw-3.3/build/tests/CMakeFiles/generate.stamp is up-to-date.
+  opacity.c
+  glad_gl.c
+  Generating Code...
+  opacity.vcxproj -> C:\Users\Nikita\Desktop\OpenGL\glfw-3.3\build\tests\Debug\opacity.exe
