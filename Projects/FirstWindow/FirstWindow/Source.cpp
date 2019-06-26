@@ -8,18 +8,22 @@ void processInput(GLFWwindow *window);
 
 const char *vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aColor;\n"
+"out vec3 ourColor;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"   gl_Position = vec4(aPos, 1.0);\n"
+"   ourColor = aColor;"
 "}\0";
 
 // The fragment shader only requires one output variable and that is a vector of size 4 that defines the final color output 
 // that we should calculate ourselves. We can declare output values with the out keyword, that we here promptly named FragColor.
 const char *fragmentShaderSource = "#version 330 core\n"
+"in vec3 ourColor;\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"   FragColor = vec4(ourColor, 1.0f);\n"
 "}\n\0";
 
 int main()
@@ -122,9 +126,10 @@ int main()
 
 	// Specifying the vertices of a triangle
 	float vertices[] = {
-	-0.5f, -0.5f, 0.0f,
-	 0.5f, -0.5f, 0.0f,
-	 0.0f,  0.5f, 0.0f
+		// positions         // colors
+		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
 	};
 
 	// VBO (Vertex Buffer Objects) keep large amounts of vertex data on the GPU memory. Vertex Data is then sent from CPU to these buffers in large batches.
@@ -156,9 +161,14 @@ int main()
 	// 3. Type of data
 	// 4. Whether or not data should be normalized. Ours is already normalized.
 	// 5. Stride. Space between consecutive vertex attributes. In the vertex data array, next vertex data is located 3 * sizeof(float) units away.
-	// 6. Offset of where the position data begins in the buffer. Position data is at the start of the array for this case. 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// 6. Offset of where the position data begins in the buffer. For position it's at the beginning (so 0) for color its 3 floats to the right. 
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -173,17 +183,25 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// float timeValue = glfwGetTime();
+		// float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+
+		// Get the location of the uniform
+		// int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+		// Updating the uniform requires us to first use teh program (because it sets the uniform on the currently active shader program)
+		glUseProgram(shaderProgram);
+		// Sets a uniform value of the currently active shader program
+		// f at the end is because there are no overloaded functions in OpenGL so f represents float (another example is glUniform4i for int)
+		// glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
 		// Drawing a triangle
-		glUseProgram(shaderProgram);
+		// glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		//-----------------Rendering Commands-----------------
+		//-----------------Check and call events and swap buffers-----------------
 		// Swaps the color buffer (a large buffer that contains color values for each pixel in GLFW's window) that has been used to draw in during this iteration and show it as output to the screen.
 		glfwSwapBuffers(window);
-
-		//-----------------Check and call events and swap buffers-----------------
 		// Checks if any events are triggered (like keyboard input or mouse movement events), updates the window state, and calls the corresponding functions (which we can set via callback methods)
 		glfwPollEvents();
 	}
