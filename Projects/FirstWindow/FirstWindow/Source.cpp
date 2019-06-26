@@ -1,30 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW\glfw3.h>
-
 #include <iostream>
+#include "Shader.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-
-const char *vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"layout (location = 1) in vec3 aColor;\n"
-"out vec3 ourColor;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos, 1.0);\n"
-"   ourColor = aColor;"
-"}\0";
-
-// The fragment shader only requires one output variable and that is a vector of size 4 that defines the final color output 
-// that we should calculate ourselves. We can declare output values with the out keyword, that we here promptly named FragColor.
-const char *fragmentShaderSource = "#version 330 core\n"
-"in vec3 ourColor;\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(ourColor, 1.0f);\n"
-"}\n\0";
 
 int main()
 {
@@ -62,65 +42,8 @@ int main()
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-//---------------------------------------------VERTEX SHADER--------------------------------------------------
-	unsigned int vertexShader;
-
-	// Creates an empty shader object behind the scenes and returns an unsigned reference ID to this shader
-	// returns 0 on error
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	// Replaces the source code of a given shader object
-	// Whenever the shader is compiled, it's compiled using the given source code
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-
-	// Compiles the given shader object
-	glCompileShader(vertexShader);
-
-	// Check for successful compilation of the shader
-	int  success_vertex_shader;
-	char infoLog_vertex_shader[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success_vertex_shader);
-	if (!success_vertex_shader)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog_vertex_shader);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog_vertex_shader << std::endl;
-	}
-
-//---------------------------------------------FRAGMENT SHADER--------------------------------------------------
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	int  success_frag_shader;
-	char infoLog_frag_shader[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success_frag_shader);
-	if (!success_frag_shader)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog_frag_shader);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog_frag_shader << std::endl;
-	}
-//---------------------------------------------SHADER PROGRAM--------------------------------------------------
-	// Create a program object
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	// Link previously compiled shaders to the program object and link them
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	int success_shader_prog;
-	char infoLog_shader_prog[512];
-
-	// Check for success of the shader program linking
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success_shader_prog);
-	if (!success_shader_prog) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog_shader_prog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog_shader_prog << std::endl;
-	}
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+//---------------------------------------------SHADERS--------------------------------------------------
+	Shader myShader("3.3.shader.vs", "3.3.shader.fs");
 
 //---------------------------------------------VERTEX DATA--------------------------------------------------
 
@@ -189,7 +112,7 @@ int main()
 		// Get the location of the uniform
 		// int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 		// Updating the uniform requires us to first use teh program (because it sets the uniform on the currently active shader program)
-		glUseProgram(shaderProgram);
+		myShader.use();
 		// Sets a uniform value of the currently active shader program
 		// f at the end is because there are no overloaded functions in OpenGL so f represents float (another example is glUniform4i for int)
 		// glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
